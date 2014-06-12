@@ -10,8 +10,7 @@ MOSCUVITES = (255,50,50)
 ESCAPE = (75,75,125)
 THRONE = (66,66,66)
 WIN = 10
-CAPTURE = 2
-#plan: minimax. 
+CAPTURE = 2 
 #input: current grid in which AI needs to make a move. output: grid after AI has made move (includes checks for pieces captured)
 def make_move(grid,player):
 	#TEMPORARY: This method chooses the best move from the list of moves at depth 1.
@@ -27,18 +26,6 @@ def make_move(grid,player):
 			max_score = movelist[i].score
 	return movelist[board_id].grid
 
-def test_some_depth_p2(grid):
-	movelist = get_list_of_moves_P2(grid)
-	movelist2 = []
-	movelist3 = []
-	for i in range(len(movelist)):
-		movelist2.append(make_move(movelist[i].grid,1))
-	for i in range(len(movelist2)):
-		movelist3 = get_list_of_moves_P2(movelist2[i])
-	for i in range(len(movelist)):
-		if movelist3[i].score > max_score:
-			board_id = i
-			max_score = movelist3[i].score
 
 class WeightedBoard:
 	"""a board with a score"""
@@ -113,6 +100,7 @@ def get_list_of_moves_P1(grid):
 				wboard = move_P1(grid_copy,(x,y),(x,j))
 				weighted_boards.append(wboard)
 	return(weighted_boards)
+	
 def get_list_of_moves_P2(grid):
 	moves = [] #list of player 1's pieces
 	for x in range(9):
