@@ -26,19 +26,16 @@ legend_size = 200
 scr_size = ( (tile_width+tile_margin)*9 + legend_size, (tile_height+tile_margin)*9)
 
 #initialize mouse pos
-mouse_tile_x = 0 
-mouse_tile_y = 0
-valid_selected = False
+mouse_coords = (0,0)
+selected_coords = (0,0)
+piece_selected = False
 
 class Player:
 	def __init__(self, player, human=True):
 		self.player = player # 1 or 2
 		self.human = human # true or false
 
-def draw_board(screen,game,selected_coords):
-	xx = selected_coords[0]
-	yy = selected_coords[1]
-
+def draw_board(screen,game,hover_coords,selected_coords=()):
 	# draw empty board
 	for x in range(game.size):
 		for y in range(game.size):
@@ -63,9 +60,20 @@ def draw_board(screen,game,selected_coords):
 			colour = SWEDES
 		elif pieces[i].player == 3:
 			colour = KING
-		# hover colour
-		if xx == x and yy == y:
+		# hover colouring
+		if hover_coords == pieces[i]:
 			colour = undarken(colour)
+		pygame.draw.rect(screen, colour, [(tile_margin+tile_width)*x+tile_margin,(tile_margin+tile_height)*y+tile_margin,tile_width,tile_height])
+
+def draw_valid_moves(screen,game,selected_coords,hover_coords):
+	valid_moves = game.current_board.get_possible_next_coords(selected_coords)
+	for i in range(len(valid_moves)):
+		x = valid_moves[i][0]
+		y = valid_moves[i][1]
+		colour = GREEN
+		# hover colouring
+		if valid[i] == hover_coords:
+			colour = undarken(GREEN)
 		pygame.draw.rect(screen, colour, [(tile_margin+tile_width)*x+tile_margin,(tile_margin+tile_height)*y+tile_margin,tile_width,tile_height])
 
 
@@ -127,10 +135,18 @@ while True:
 		if event.type == QUIT:
 			sys.exit() # window closed, quit
 		elif event.type == pygame.MOUSEBUTTONDOWN:
-			if player_1.human and game.player == 1:
-				pass
-			elif player_2.human and game.player == 2:
-				pass
+			# move or unselect the piece
+			if piece_selected:
+				# if valid move, do it
+				if selected_coords in  game.current_board.get_possible_next_coords(selected_coords):
+					tafl.controller.make_move()
+
+			# try to select a piece
+			else:
+				piece = game.current_board.get_piece(selected_coords)
+				if piece.player == 1 or piece.player == 3
+					selected_coords = mouse_coords
+					piece_selected = True
 				
 
 	#AI PLAYERS
@@ -139,8 +155,7 @@ while True:
 		# DO AI MOVE HERE
 		timer = time.clock()-timer
 		print("Seconds to calculate: ",timer)
-		player_2.to_move = False
-		player_1.to_move = True
+		game.player = 2
 
 	if game.player == 2 and not player_2.human:
 		time1 = time.clock()
@@ -157,11 +172,12 @@ while True:
 
 	# get mouse position
 	mouse_pos = pygame.mouse.get_pos()
-	mouse_tile_x = mouse_pos[0] // (tile_width + tile_margin)
-	mouse_tile_y = mouse_pos[1] // (tile_height + tile_margin)
+	mouse_coords = (mouse_pos[0] // (tile_width + tile_margin), mouse_pos[1] // (tile_height + tile_margin))
 
 	# draw board
-	draw_board(screen, game, (mouse_tile_x,mouse_tile_y))
+	draw_board(screen, game, mouse_coords)
+	if piece_selected:
+		draw_valid_moves(screen, game, selected_coords, mouse_coords)
 	
 	# refresh
 	pygame.display.flip()
