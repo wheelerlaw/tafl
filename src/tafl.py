@@ -10,6 +10,7 @@ class GamePiece:
         self.x = coords[0]
         self.y = coords[1]
         self.player = player
+        return
         
     def clone(self):
         """clone
@@ -22,6 +23,7 @@ class GamePiece:
         Moves this game piece to the coordinates passed into the parameters."""
         self.x=coords[0]
         self.y=coords[1]
+        return
         
                 
 class Tile:
@@ -34,6 +36,7 @@ class Tile:
     def __init__(self, occupied_with=0, kind=None):
         self.occupied_with = occupied_with
         self.kind = kind
+        return
 
 
 class Board:
@@ -48,6 +51,7 @@ class Board:
             self.game_pieces = self._create_game_pieces()
         else:
             self.game_pieces = []
+        return
         
     def clone(self):
         """CLONE
@@ -59,17 +63,29 @@ class Board:
             
         return copy
     
-    def __hashable__(self):
-        """Hashable
+    def __hash__(self):
+        """Hash
         Implements and overrides the default __hashable__ method for objects to define 
         the boards algorithm for hashing. """
         token = ""
         for gamePiece in self.game_pieces:
-            token = token + gamePiece.x + gamePiece.y + ""
+            token = token + str(gamePiece.x) + str(gamePiece.y)
             
-        hash = int(gamePiece) // 6
+        hash = int(token) // 6
         return hash
     
+    def __eq__(self,other):
+        """eq
+        Establishes the equivalence between the boards. Compares the x and y coordinates of all the 
+        pieces of both boards. """
+        if len(self.game_pieces) != len(other.game_pieces):
+            return False
+        for i in range(len(self.game_pieces)):
+            if self.game_pieces[i].x != other.game_pieces[i].x or self.game_pieces[i].y != other.game_pieces[i].y:
+                return False
+        return True
+        
+            
     def _create_game_pieces(self):
         """_creategame_pieces
         Initializes the game pieces for the board using the start configuration. ONLY CALL THIS
@@ -85,9 +101,9 @@ class Board:
         
         p2pieces=[]
         
-        list_of_player_2_coords = [(0,3), (0,4), (0,5), (1,4)
-                                   (8,3), (8,4), (8,5), (7,4)
-                                   (3,0), (4,0), (5,0), (4,1)
+        list_of_player_2_coords = [(0,3), (0,4), (0,5), (1,4),
+                                   (8,3), (8,4), (8,5), (7,4),
+                                   (3,0), (4,0), (5,0), (4,1),
                                    (3,8), (4,8), (5,8), (4,7)]
         
         for coord in list_of_player_2_coords:
@@ -116,28 +132,31 @@ class Board:
         Returns a dictionary of the next possible moves based on the current configuration. 
         The key is the hash for the board configuration and the value is the board object itself. """
         moves = {}
-        for i in len(self.game_pieces):
-            boardCopy = self.clone()
-            boardCopy.game_pieces[i].moveTo((boardCopy.game_pieces[i].x,boardCopy.game_pieces[i].y+1))
-            moves.append(boardCopy.hash(),boardCopy)
+        for i in range(len(self.game_pieces)):
+            board_copy = self.clone()
+            board_copy.game_pieces[i].moveTo((self.game_pieces[i].x,self.game_pieces[i].y+1))
+            moves[hash(board_copy)] = board_copy
+        return moves
            
     def move_piece(self, selected_piece_coords, destination_coords):
         for piece in self.game_pieces:
             if selected_piece_coords[0] == piece.x and selected_piece_coords[1] == piece.y:
                 piece.x = destination_coords[0]
                 piece.y = destination_coords[1]
+        return
 
                 
 class Game:
     def __init__(self,size=9):
         self.size = size
         self.throne_coords = (4,4)
-        self.throne_adj_coords = [(3,4), (5,4)
+        self.throne_adj_coords = [(3,4), (5,4),
                                   (4,3), (4,5)]
         self.escape_coords = [(0,0), (0,8),
                               (8,0), (8,8)]
         self.current_board = Board(True)
         self.prev_boards = None
+        return
         
     def get_current_board(self):
         return self.current_board
@@ -185,9 +204,3 @@ class Game:
             # notify
             
             return True
-            
-
-
-
-        
-        
