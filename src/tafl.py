@@ -15,7 +15,7 @@ class GamePiece:
     def clone(self):
         """clone
         Returns a copy of the game piece. """
-        copy = GamePiece((self.x,self.y), self.player, self.king)
+        copy = GamePiece((self.x,self.y), self.player)
         return copy
         
     def move_to(self,coords):
@@ -46,18 +46,19 @@ class Board:
     size: the size of the sides of the board (all sides must be equal). Must be an odd number. 
     initialize_pieces: Whether or not create new game pieces for the board. ONLY SET TRUE ON 
         GAME STARTUP!!"""
-    def __init__(self, initialize_pieces=False):
+    def __init__(self, game, initialize_pieces=False):
         if(initialize_pieces):
             self.game_pieces = self._create_game_pieces()
         else:
             self.game_pieces = []
+        self.game = Game
         return
         
     def clone(self):
         """CLONE
         Clones the board and returns a copy of it. Performs a deep clone so all the 
         tiles, game pieces, and everything are clones as well. """
-        copy = Board(self.size)
+        copy = Board(self.game)
         for old_piece in self.game_pieces:
             copy.game_pieces.append(old_piece.clone())
             
@@ -134,19 +135,46 @@ class Board:
         moves = {}
         for i in range(len(self.game_pieces)):
             board_copy = self.clone()
-            board_copy.game_pieces[i].moveTo((self.game_pieces[i].x,self.game_pieces[i].y+1))
+            #board_copy.game_pieces[i].moveTo((self.game_pieces[i].x,self.game_pieces[i].y+1))
+            
             moves[hash(board_copy)] = board_copy
         return moves
            
     def move_piece(self, selected_piece_coords, destination_coords):
+        """move_piece
+        Moves the pieces as the selected coordinates. If the piece does not exist at that coordinate, 
+        this method returns false. Otherwise, it returns true. Also checks to make sure that there is no piece
+        at the destinatio coordinates. 
+        selected_piece_coords: 2-tuple of the piece coordinates, where the x coordinate is the first element, and 
+            the y-coordinate is the second element. 
+        destination_coords: 2-tuple of the destination coordinates to move the piece. Checks to see if the 
+            destination does not contain a piece and will return true if valid or false is not."""
+            
+        if self.game.verify_coords(selected_piece_coords) == False:
+            return False
+        if self.game.verify_coords(destination_coords) == False:
+            return False
+        
+        if self.is_piece(destination_coords) == False:
+            return False
+            
         for piece in self.game_pieces:
             if selected_piece_coords[0] == piece.x and selected_piece_coords[1] == piece.y:
                 piece.x = destination_coords[0]
                 piece.y = destination_coords[1]
-        return
+        return True
+        
+    def size(self):
+        """size
+        Helper function to return the size of the board that reduces the need to trace back into the enclosing
+        classes every time the size if needed. """
+        return self.game.size
 
                 
 class Game:
+    """game
+    The main game class containing the state and the controller class for all the interaction with the state. 
+    initialization autumatically creates a new board with starting congfiguration. """
     def __init__(self,size=9):
         self.size = size
         self.throne_coords = (4,4)
@@ -154,43 +182,53 @@ class Game:
                                   (4,3), (4,5)]
         self.escape_coords = [(0,0), (0,8),
                               (8,0), (8,8)]
-        self.current_board = Board(True)
+        self.current_board = Board(self,True)
         self.prev_boards = None
+        self.controller = self.Controller()
+        
+        self.player = 1
+        self.over = False
         return
         
     def get_current_board(self):
         return self.current_board
     
+    def verify_coords(self,coords):
+        """verify_coords
+        Does a simple coordinate verification to ensure that they are within the bounds defined in the game
+        class. 
+        coords: 2-tuple of the coordinates to be verified. first element is the x-coordinate, second element 
+            is the y-coordinate. 
+        Returns false if the coordinates are not within the bounds. Otherwise, returns true. """
+        if coords[0] >= self.size or coords[0] < 0:
+            return False
+        if coords[1] >= self.size or coords[1] < 0:
+            return False
+        return True
+    
     class Controller:
-        def __init(self):
+        """controller class
+        This class is responsible for accepting the move requests from the various different kinds of front ends. 
+        There is no state (data) associated with the controller, all of the state is stored in the parent game class."""
+        def __init__(self):
             pass
     
-        def _validate_coords(self,coords):
-            if coords[0] >= self.size or coords[0] < 0:
-                return False
-            if coords[1] >= self.size or coords[1] < 0:
-                return False
-            return True
-        
         def make_move(self,selected_piece_coords, destination_coords, player):
-            
-            # Verification of the coordinates. 
-            if self._validate_coords(destination_coords) == False:
-                return False
-            if self._validate_coords(selected_piece_coords) == False:
-                return False
-            
-            # Validation of the coordinate.
-            if self.current_board.is_piece(selected_piece_coords) == False:
-                return False
-            if self.current_board.is_piece(destination_coords):
-                return False
-            
+            """make_move
+            The main method of the controller class. 
+            Takes in the selected piece coords, destination coords, and the player number and attempts to move 
+            the piece. Performs some simple verification and validation of the coordinates. 
+            Generates a list of valid moves and sees if the selected move is among them. Returns false if not valid, 
+            otherwise returns true.
+            selected_piece_coords: 2-tuple of the coordinates. First element: x-coordinate, second element: y-coordinate."""
+           
             # Verification player number:"
             if player < 0 or player > 3:
                 return False
             
             board_copy = self.current_board.clone()
+            
+            # move_piece handled move verification and validation. 
             board_copy.move_piece(selected_piece_coords, destination_coords)
             
             next_moves = self.current_board.get_possible_next_moves(selected_piece_coords)
@@ -203,4 +241,15 @@ class Game:
             
             # notify
             
+            if player == 1 or player == 3:
+                self.player = 2
+            if player == 2:
+                self.player = 1
             return True
+
+# Unit Tests:
+
+# Tests creating a board and cloning it. 
+board1 = Board(None,True)
+board2 = board1.clone()
+print(board1 == board2)
