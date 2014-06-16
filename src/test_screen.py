@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #Tested to be compatible with python 3.2 and 2.7 and pygame for those versions
-import pygame,sys,
+import pygame,sys, tafl
 from pygame.locals import *
 
 def test(game,board=False):
@@ -54,9 +54,7 @@ def test(game,board=False):
 				colour = SWEDES
 			elif pieces[i].player == 3:
 				colour = KING
-			# hover colour
-			if xx == x and yy == y:
-				colour = undarken(colour)
+			
 			pygame.draw.rect(screen, colour, [(tile_margin+tile_width)*x+tile_margin,(tile_margin+tile_height)*y+tile_margin,tile_width,tile_height])
 
 
@@ -100,13 +98,6 @@ def test(game,board=False):
 
 	 # visible mouse pointer
 	pygame.mouse.set_visible( True )
-
-	# start a new game
-	game = tafl.Game()
-
-	# create players (add "False" argument to use ai)
-	player_1 = Player(1)
-	player_2 = Player(2)
 
 	# start game clock
 	clock = pygame.time.Clock( )

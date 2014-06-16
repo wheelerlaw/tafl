@@ -53,7 +53,8 @@ class Board:
             self.game_pieces = self._create_game_pieces()
         else:
             self.game_pieces = []
-        self.game = Game
+            
+        self.game=game
         return
         
     def clone(self):
@@ -74,8 +75,8 @@ class Board:
         for gamePiece in self.game_pieces:
             token = token + str(gamePiece.x) + str(gamePiece.y)
             
-        hash = int(token) // 6
-        return hash
+        hash_ = int(token) // 6
+        return hash_
     
     def __eq__(self,other):
         """eq
@@ -135,13 +136,46 @@ class Board:
         Returns a dictionary of the next possible moves based on the current configuration. 
         The key is the hash for the board configuration and the value is the board object itself. """
         moves = {}
-        for i in range(len(self.game_pieces)):
+        next_move_coords = self.get_possible_next_coords(selected_piece_coords)
+        for next_move in range(len(next_move_coords)):
             board_copy = self.clone()
-            #board_copy.game_pieces[i].moveTo((self.game_pieces[i].x,self.game_pieces[i].y+1))
-            
+            board_copy.move_piece(selected_piece_coords, next_move)            
             moves[hash(board_copy)] = board_copy
         return moves
-           
+    
+    def get_possible_next_coords(self, selected_piece_coords):
+        """get_possible_next_coords
+        Returns a list of 2-tuples as coordinates of the places that the selected piece can go. """
+        coords = []
+        if selected_piece_coords[0] < 9:
+            for i in range(selected_piece_coords[0]+1, 9):
+                temp_coords = (i,selected_piece_coords[1])
+                if self.is_piece(temp_coords):
+                    break
+                coords.append(temp_coords)
+                
+        if selected_piece_coords[0] > 0:
+            for i in range(selected_piece_coords[0]-1, 0, -1):
+                temp_coords = (i,selected_piece_coords[1])
+                if self.is_piece(temp_coords):
+                    break
+                coords.append(temp_coords)
+        
+        if selected_piece_coords[1] < 9:
+            for i in range(selected_piece_coords[1]+1, 9):
+                temp_coords = (selected_piece_coords[0], i)
+                if self.is_piece(temp_coords):
+                    break
+                coords.append(temp_coords)
+                
+        if selected_piece_coords[1] > 0:
+            for i in range(selected_piece_coords[1]-1, 0, -1):
+                temp_coords = (selected_piece_coords[0], i)
+                if self.is_piece(temp_coords):
+                    break
+                coords.append(temp_coords)
+        return coords
+    
     def move_piece(self, selected_piece_coords, destination_coords):
         """move_piece
         Moves the pieces as the selected coordinates. If the piece does not exist at that coordinate, 
@@ -152,12 +186,12 @@ class Board:
         destination_coords: 2-tuple of the destination coordinates to move the piece. Checks to see if the 
             destination does not contain a piece and will return true if valid or false is not."""
             
-        if self.game.verify_coords(selected_piece_coords) == False:
+        if selected_piece_coords[0] < 0 or destination_coords[0] < 0:
             return False
-        if self.game.verify_coords(destination_coords) == False:
+        if selected_piece_coords[1] >= 9 or destination_coords[1] >= 9:
             return False
         
-        if self.is_piece(destination_coords) == False:
+        if self.is_piece(destination_coords) == True:
             return False
             
         for piece in self.game_pieces:
@@ -165,13 +199,40 @@ class Board:
                 piece.x = destination_coords[0]
                 piece.y = destination_coords[1]
         return True
+    
+    def get_piece(self, selected_piece_coords):
+        """get_piece
+        Given a coordinate, returns a copy of a given piece. """
+        for piece in self.game_pieces:
+            if selected_piece_coords[0] == piece.x and selected_piece_coords[1] == piece.y:
+                return piece.clone()
+        return None
+    
+    def check_for_captures(self, selected_piece_coords, player):
+        """check_for_captures
+        given a coordinate of a piece, checks for captures pieces in its vicinity. """
+        neighbor_coords = [(selected_piece_coords[0]+1, selected_piece_coords[1]),
+                           (selected_piece_coords[0]-1, selected_piece_coords[1]),
+                           (selected_piece_coords[0], selected_piece_coords[1]+1),
+                           (selected_piece_coords[0], selected_piece_coords[1]-1)]
         
-    def size(self):
-        """size
-        Helper function to return the size of the board that reduces the need to trace back into the enclosing
-        classes every time the size if needed. """
-        return self.game.size
-
+        neighbor_of_neighbor_coords = [(selected_piece_coords[0]+2, selected_piece_coords[1]),
+                                       (selected_piece_coords[0]-2, selected_piece_coords[1]),
+                                       (selected_piece_coords[0], selected_piece_coords[1]+2),
+                                       (selected_piece_coords[0], selected_piece_coords[1]-2)]
+        
+        for i in range(4):
+            neighbor_piece = self.get_piece(neighbor_coords[i])
+            neighbor_of_neighbor_piece = self.get_piece(neighbor_of_neighbor_coords[i])
+            
+            if neighbor_piece == None and neighbor_of_neighbor_piece == None and neighbor_of_neighbor_piece not in self.game.escape_coords and neighbor_of_neighbor_piece != self.game.throne_coords:
+                break
+            
+            if player == 1:
+                if neighbor_piece.player == 2 and (neighbor_of_neighbor_piece.player == 1 or neighbor_of_neighbor_piece.player == 3 or neighbor_of_neighbor_coords[i] in self.game.escape_coords or neighbor_of_neighbor_coords[i] == self.game.throne_coord):
+                    
+            else:
+                pass
                 
 class Game:
     """game
@@ -249,9 +310,6 @@ class Game:
                 self.player = 1
             return True
 
-# Unit Tests:
+coords = Board.get_possible_next_coords(Board(None,True),(5,4))
 
-# Tests creating a board and cloning it. 
-board1 = Board(None,True)
-board2 = board1.clone()
-print(board1 == board2)
+print(coords)
