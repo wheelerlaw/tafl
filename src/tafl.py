@@ -1,3 +1,5 @@
+
+
 class GamePiece:
     def __init__(self, coords, player):
         """ GamePiece class. 
