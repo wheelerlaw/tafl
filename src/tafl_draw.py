@@ -2,7 +2,6 @@
 #Tested to be compatible with python 3.2 and 2.7 and pygame for those versions
 import pygame,sys,math,random, time, tafl
 from pygame.locals import *
-from tafl_methods import *
 
 #COLOUR and variable initialization
 BACKGROUND = (175,175,175)
