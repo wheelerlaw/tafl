@@ -160,7 +160,7 @@ class Board:
                 next_coords.append(temp_coords)
                 
         if selected_piece_coords[0] > 0:
-            for i in range(selected_piece_coords[0]-1, 0, -1):
+            for i in range(selected_piece_coords[0]-1, -1, -1):
                 temp_coords = (i, selected_piece_coords[1])
                 if self.is_piece(temp_coords):
                     break
@@ -174,7 +174,7 @@ class Board:
                 next_coords.append(temp_coords)
                 
         if selected_piece_coords[1] > 0:
-            for i in range(selected_piece_coords[1]-1, 0, -1):
+            for i in range(selected_piece_coords[1]-1, -1, -1):
                 temp_coords = (selected_piece_coords[0], i)
                 if self.is_piece(temp_coords):
                     break
