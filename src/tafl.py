@@ -141,46 +141,83 @@ class Board:
         Returns a dictionary of the next possible moves based on the current configuration. 
         The key is the hash for the board configuration and the value is the board object itself. """
         moves = {}
-        next_move_coords = self.get_possible_next_coords(selected_piece_coords)
+        piece = self.get_piece(selected_piece_coords)
+        next_move_coords = self.get_possible_next_coords(selected_piece_coords,piece.player)
         for next_move in next_move_coords:
             board_copy = self.clone()
             board_copy.move_piece(selected_piece_coords, next_move)            
             moves[hash(board_copy)] = board_copy
         return moves
     
-    def get_possible_next_coords(self, selected_piece_coords):
+    def get_possible_next_coords(self, selected_piece_coords, player):
         """get_possible_next_coords
         Returns a list of 2-tuples as coordinates of the places that the selected piece can go. """
         next_coords = []
-        if selected_piece_coords[0] < 9:
-            for i in range(selected_piece_coords[0]+1, 9):
-                temp_coords = (i, selected_piece_coords[1])
-                if self.is_piece(temp_coords):
-                    break
-                next_coords.append(temp_coords)
-                
-        if selected_piece_coords[0] > 0:
-            for i in range(selected_piece_coords[0]-1, -1, -1):
-                temp_coords = (i, selected_piece_coords[1])
-                if self.is_piece(temp_coords):
-                    break
-                next_coords.append(temp_coords)
+        special_coords = [(0, 0), (0, 8), (8, 0), (8, 8), (4, 4)]
+        if player == 1 or player == 2:
+            if selected_piece_coords[0] < 9:
+                for i in range(selected_piece_coords[0]+1, 9):
+                    temp_coords = (i, selected_piece_coords[1])
+                    if self.is_piece(temp_coords):
+                        break
+                    if temp_coords not in special_coords:
+                        next_coords.append(temp_coords)
+                    
+            if selected_piece_coords[0] > 0:
+                for i in range(selected_piece_coords[0]-1, -1, -1):
+                    temp_coords = (i, selected_piece_coords[1])
+                    if self.is_piece(temp_coords):
+                        break
+                    if temp_coords not in special_coords:
+                        next_coords.append(temp_coords)
+            
+            if selected_piece_coords[1] < 9:
+                for i in range(selected_piece_coords[1]+1, 9):
+                    temp_coords = (selected_piece_coords[0], i)
+                    if self.is_piece(temp_coords):
+                        break
+                    if temp_coords not in special_coords:
+                        next_coords.append(temp_coords)
+                    
+            if selected_piece_coords[1] > 0:
+                for i in range(selected_piece_coords[1]-1, -1, -1):
+                    temp_coords = (selected_piece_coords[0], i)
+                    if self.is_piece(temp_coords):
+                        break
+                    if temp_coords not in special_coords:
+                        next_coords.append(temp_coords)
+            return next_coords
+        # KING movement
+        else:
+            if selected_piece_coords[0] < 9:
+                for i in range(selected_piece_coords[0]+1, 9):
+                    temp_coords = (i, selected_piece_coords[1])
+                    if self.is_piece(temp_coords):
+                        break
+                    next_coords.append(temp_coords)
+                    
+            if selected_piece_coords[0] > 0:
+                for i in range(selected_piece_coords[0]-1, -1, -1):
+                    temp_coords = (i, selected_piece_coords[1])
+                    if self.is_piece(temp_coords):
+                        break
+                    next_coords.append(temp_coords)
+            
+            if selected_piece_coords[1] < 9:
+                for i in range(selected_piece_coords[1]+1, 9):
+                    temp_coords = (selected_piece_coords[0], i)
+                    if self.is_piece(temp_coords):
+                        break
+                    next_coords.append(temp_coords)
+                    
+            if selected_piece_coords[1] > 0:
+                for i in range(selected_piece_coords[1]-1, -1, -1):
+                    temp_coords = (selected_piece_coords[0], i)
+                    if self.is_piece(temp_coords):
+                        break
+                    next_coords.append(temp_coords)
+            return next_coords
         
-        if selected_piece_coords[1] < 9:
-            for i in range(selected_piece_coords[1]+1, 9):
-                temp_coords = (selected_piece_coords[0], i)
-                if self.is_piece(temp_coords):
-                    break
-                next_coords.append(temp_coords)
-                
-        if selected_piece_coords[1] > 0:
-            for i in range(selected_piece_coords[1]-1, -1, -1):
-                temp_coords = (selected_piece_coords[0], i)
-                if self.is_piece(temp_coords):
-                    break
-                next_coords.append(temp_coords)
-        return next_coords
-    
     def move_piece(self, selected_piece_coords, destination_coords):
         """move_piece
         Moves the pieces as the selected coordinates. If the piece does not exist at that coordinate, 
