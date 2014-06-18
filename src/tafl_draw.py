@@ -80,7 +80,7 @@ def draw_board(screen,game,hover_coords,selected_coords):
 		pygame.draw.rect(screen, colour, [(tile_margin+tile_width)*x+tile_margin,(tile_margin+tile_height)*y+tile_margin,tile_width,tile_height])
 
 def draw_valid_moves(screen,game,hover_coords,selected_coords):
-	valid_moves = game.current_board.get_possible_next_coords(selected_coords)
+	valid_moves = game.current_board.get_possible_next_coords(selected_coords,game.current_board.get_piece(selected_coords).player)
 	for i in range(len(valid_moves)):
 		x = valid_moves[i][0]
 		y = valid_moves[i][1]
@@ -152,10 +152,10 @@ while not game.over:
 			# move or unselect the piece
 			if selected_coords:
 				# if valid move, do it
-				valid_moves = game.current_board.get_possible_next_coords(selected_coords)
+				valid_moves = game.current_board.get_possible_next_coords(selected_coords,game.current_board.get_piece(selected_coords))
 				for i in range(len(valid_moves)) :
 					if mouse_coords == valid_moves[i]:
-						print(game.make_move(selected_coords, mouse_coords, game.player))
+						game.make_move(selected_coords, mouse_coords, game.player)
 				# if any click is made, the piece should be unselected
 				selected_coords = ()
 
