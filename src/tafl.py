@@ -179,15 +179,6 @@ class Board:
                 if self.is_piece(temp_coords):
                     break
                 next_coords.append(temp_coords)
-
-
-        # handle the king
-        piece = self.get_piece(selected_piece_coords)
-
-        if piece is not None:
-            if piece.player == 3:
-                if (4,4) in next_coords:
-                    next_coords.remove((4,4))
         return next_coords
     
     def move_piece(self, selected_piece_coords, destination_coords):
